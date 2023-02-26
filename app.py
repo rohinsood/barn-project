@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
@@ -51,7 +52,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
-                login_user(user, remember=form.remember.data)
+                login_user(user)
                 return redirect(url_for('dashboard'))
 
         return '<h1>Invalid username or password</h1>'
@@ -63,10 +64,14 @@ def signup():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data, method='sha256')
-        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
+        try:
+            hashed_password = generate_password_hash(form.password.data, method='sha256')
+            new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            return "<h1>Error: Username or Email address is already in use.</h1>"
 
         return '<h1>New user has been created!</h1>'
 
@@ -76,6 +81,21 @@ def signup():
 @login_required
 def dashboard():
     return render_template('dashboard.html', name=current_user.username)
+
+@app.route('/timer')
+@login_required
+def timer():
+    return '<h1>timer</h1>'
+
+@app.route('/search')
+@login_required
+def search():
+    return '<h1>search</h1>'
+
+@app.route('/quiz')
+@login_required
+def quiz():
+    return '<h1>quiz</h1>'
 
 @app.route('/logout')
 @login_required
