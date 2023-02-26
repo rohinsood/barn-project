@@ -1,4 +1,4 @@
-from sqlite3 import IntegrityError
+from sqlalchemy.exc import IntegrityError
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
@@ -11,8 +11,10 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -22,9 +24,6 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
-
-with app.app_context():
-    db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -69,7 +68,7 @@ def signup():
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
-        except Exception:
+        except IntegrityError:
             db.session.rollback()
             return "<h1>Error: Username or Email address is already in use.</h1>"
 
@@ -82,7 +81,7 @@ def signup():
 def dashboard():
     return render_template('dashboard.html', name=current_user.username)
 
-@app.route('/timer')
+@app.route('/timer', methods=['GET', 'POST', 'DELETE', 'UPDATE'])
 @login_required
 def timer():
     return '<h1>timer</h1>'
@@ -102,6 +101,3 @@ def quiz():
 def logout():
     logout_user()
     return redirect(url_for('index'))
-
-if __name__ == '__main__':
-    app.run(debug=True)
