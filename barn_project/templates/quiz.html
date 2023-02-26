@@ -1,0 +1,306 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Quiz
+{% endblock %}
+
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
+<link href='http://fonts.googleapis.com/css?family=Poppins' rel='stylesheet' type='text/css'>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-inverse navbar-fixed-top" style="background-color: #3d2f2b">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+        aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="dashboard">BARN Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="{{ url_for('timer') }}">Ben's Feature</a></li>
+        <li><a href="#">Arnav's Feature</a></li>
+        <li><a href="{{ url_for('search') }}">Luke's Feature</a></li>
+        <li><a href="{{ url_for('quiz') }}">Nicolas's Feature</a></li>
+        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="center">
+    <h2>
+      Take this quiz about baseball statistics and view your & other user's score!
+    </h2>
+    <div class="scores-container">
+      <table class="table" style="margin-left: auto; margin-right: auto;">
+        <tr>
+          <th class="username">
+            Username
+          </th>
+          <th class="correct">
+            Correct
+          </th>
+          <th class="incorrect">
+            Incorrect
+          </th>
+        </tr>
+        <tr>
+
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div id="quiz-container"></div>
+</div>
+
+
+<style>
+  #quiz-container {
+    margin-left: 40px;
+    margin-right: 40px;
+  }
+
+  table,
+  th,
+  td {
+    text-align: center;
+    border: 2px solid
+  }
+</style>
+
+<script>
+
+  getQuizzes()
+
+  function getQuizzes() {
+    const table = document.getElementsByClassName("table")[0]
+
+    var url = "{{ url }}list-quizzes"
+    var options = {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+      .then(response => response.json())
+      .then(data => {
+
+        for (user in data) {
+          var newRow = document.createElement("tr")
+          
+          var username = document.createElement("td")
+          username.textContent = data[user]["username"]
+          
+          var correct = document.createElement("td")
+          correct.textContent = data[user]["correct"]
+          correct.setAttribute("id", "{{ id }}-correct")
+          
+          var incorrect = document.createElement("td")
+          incorrect.textContent = data[user]["incorrect"]
+          incorrect.setAttribute("id", "{{ id }}-incorrect")
+
+          newRow.appendChild(username)
+          newRow.appendChild(correct)
+          newRow.appendChild(incorrect)
+
+          table.appendChild(newRow)
+        }
+
+      })
+      .catch(error => console.error(error));
+  }
+
+  function updateQuizzes() {
+    
+    var correct = document.getElementById("{{ id }}-correct")
+    var incorrect = document.getElementById("{{ id }}-incorrect")
+
+    const params = new URLSearchParams();
+    params.append("id", "{{ id }}")
+
+    var url = "{{ url }}correct?" + params.toString()
+    var options = {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+      .then(response => response.json())
+      .then(data => {
+        correct.textContent = data["correct"]
+        incorrect.textContent = data["incorrect"]
+      })
+      .catch(err => console.log(err))
+  }
+
+  function putCorrect() {
+    const params = new URLSearchParams();
+    params.append("id", "{{ id }}")
+
+    var url = "{{ url }}correct?" + params.toString()
+    var options = {
+      method: 'PUT',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+      .then(response => response.json())
+      .then(data => { console.log(data); })
+      .catch(error => console.error(error));
+    
+    updateQuizzes()
+  }
+
+  function putIncorrect() {
+    const params = new URLSearchParams();
+    params.append("id", "{{ id }}")
+
+    var url = "{{ url }}incorrect?" + params.toString()
+    var options = {
+      method: 'PUT',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+      .then(response => response.json())
+      .then(data => { console.log(data); })
+      .catch(error => console.error(error));
+    
+    updateQuizzes()
+  }
+
+  const quiz_container = document.getElementById("quiz-container")
+
+  // initialize dictionary
+  const questions = {
+    "Who was the first player to reach 4000 career hits?":
+      [1, 3, ["(a) Stan Musial", "(b) Hank Aaron", "(c) Pete Rose", "(d) Ty Cobb"]],
+    "True Or False: Lou Gehrig holds the record for the most career grand slams.":
+      [2, 2, ["(a) True", "(b) False"]],
+    "True Or False: Randy Johnson holds the record for the most career strikeouts.":
+      [3, 2, ["(a) True", "(b) False"]],
+    "In 1998, David Wells of the New York Yankees threw a perfect game. Which team was this against?":
+      [4, 2, ["(a) SF Giants", "(b) Minnesota Twins", "(c) Toronto Blue Jays", "(d) Boston Red Sox"]],
+    "Which team won the first World Series in 1903?":
+      [5, 1, ["(a) Boston Americans", "(b) Minnesota Twins", "(c) SF Giants", "(d) Boston Red Sox"]],
+    "Cal Ripken Jr holds the record for the most consecutive games played in history at 2,632. What year was this streak broken?":
+      [6, 2, ["(a) 1925", "(b) 1982", "(c) 1998", "(d) 1939"]],
+    "Which player was the first-ever MLB Rookie of the Year award winner?":
+      [7, 4, ["(a) Hank Aaron", "(b) Lou Gehrig", "(c) Babe Ruth", "(d) Jackie Robinson"]],
+    "Which player was the first-ever MLB Rookie of the Year award winner?":
+      [8, 4, ["(a) Hank Aaron", "(b) Lou Gehrig", "(c) Babe Ruth", "(d) Jackie Robinson"]],
+  }
+
+  for (let question in questions) {
+
+    // question wrapper
+    let question_container = document.createElement("div")
+    question_container.style.backgroundColor = "white"
+    question_container.style.marginTop = "10px"
+    question_container.style.marginBottom = "10px"
+    question_container.style.padding = "15px"
+    question_container.style.borderRadius = "18px"
+
+    quiz_container.appendChild(question_container)
+
+    // key in questions
+    let prompt = document.createElement("h3")
+    prompt.innerHTML = "#" + questions[question][0] + ") " + question
+    prompt.style.marginBottom = "2px"
+    prompt.style.marginTop = ""
+
+    question_container.appendChild(prompt)
+
+    // ul for answers
+    let answers = document.createElement("ul")
+    answers.style.listStyle = "none"
+    answers.style.margin = "4px"
+    answers.style.paddingLeft = "12px"
+    answers.setAttribute("id", "answer-container-" + questions[question][0])
+
+    question_container.appendChild(answers)
+
+    let answer_num = 0
+
+    for (let answer_choice in questions[question][2]) {
+
+      answer_num += 1
+
+      let answer_option = document.createElement("li")
+      answer_option.style = "display:flex; align-items:center;"
+      answer_option.style.cursor = "pointer";
+      answer_option.style.borderRadius = "8px"
+      answer_option.style.backgroundColor = "#e7e5e4"
+      answer_option.style.marginTop = "8px"
+      answer_option.setAttribute("id", answer_num)
+
+
+      let answer_text = document.createElement("p")
+      answer_text.style.marginLeft = "8px"
+      answer_text.innerHTML = questions[question][2][answer_choice]
+
+      answer_option.append(answer_text)
+
+      answers.appendChild(answer_option)
+
+      answer_option.onclick = () => check_answer(questions[question][0], answer_option.id)
+    }
+
+  }
+
+  let correct = 0;
+  let incorrect = 0;
+
+  function check_answer(question_num, answer_num) {
+
+    // gets the answer element
+    let answer_container = document.getElementById("answer-container-" + question_num)
+    let selected_answer = answer_container.children[answer_num - 1]
+    selected_answer.style.transition = "all .5s ease"
+
+    // converts the dict to an array and accesses the answer by question_num
+    if (Object.values(questions)[question_num - 1][1] == answer_num) {
+      selected_answer.style.backgroundColor = "#bbf7d0";
+      selected_answer.style.fontWeight = "bold";
+      putCorrect()
+    } else {
+      putIncorrect()
+      selected_answer.style.textDecoration = "line-through";
+      selected_answer.style.backgroundColor = "#fca5a5";
+    }
+
+  }
+
+</script>
+
+{% endblock %}

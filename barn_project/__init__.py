@@ -28,6 +28,34 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
+    _correct = db.Column(db.Integer)
+    _incorrect = db.Column(db.Integer)
+
+    def init_user(self):
+        self._correct = 0
+        self._incorrect = 0
+        print("init user success")
+
+    @property
+    def correct(self):
+        return self._correct
+    
+    @property
+    def incorrect(self):
+        return self._incorrect
+    
+    def incrementCorrect(self):
+        self._correct += 1
+
+    def incrementIncorrect(self):
+        self._incorrect += 1
+
+    def to_dict(self):
+        return {
+            "username": self.username,
+            "correct": self._correct,
+            "incorrect": self._incorrect,
+        }
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -73,6 +101,7 @@ def signup():
         try:
             hashed_password = generate_password_hash(form.password.data, method='sha256')
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+            new_user.init_user()
             db.session.add(new_user)
             db.session.commit()
         except IntegrityError:
@@ -101,7 +130,7 @@ def search():
 @app.route('/quiz')
 @login_required
 def quiz():
-    return '<h1>quiz</h1>'
+    return render_template('quiz.html', id=current_user.id)
 
 @app.route('/logout')
 @login_required
