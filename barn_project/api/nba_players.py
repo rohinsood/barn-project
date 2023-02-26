@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from flask_restful import Api, Resource, reqparse
-from .. import db
+from .. import RegisterForm, db
 from ..model.nba_player import Players
 
 player_blueprint = Blueprint("players", __name__)
@@ -8,10 +8,10 @@ player_api = Api(player_blueprint)
 
 class PlayersAPI(Resource):
   def get(self):
-    id = request.args.get("id")
-    driver = db.session.query(Players).get(id)
-    if driver:
-      return driver.to_dict()
+    name = request.args.get("name")
+    player = db.session.query(Players).filter_by(_name_id=name.lower()).first()
+    if player:
+      return player.to_dict()
     return {"message": "driver not found"}, 404
 
   def post(self):

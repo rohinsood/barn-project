@@ -39,6 +39,9 @@ class RegisterForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 
+class SearchForm(FlaskForm):
+    name = StringField('search')
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -72,7 +75,7 @@ def signup():
             db.session.rollback()
             return "<h1>Error: Username or Email address is already in use.</h1>"
 
-        return '<h1>New user has been created!</h1>'
+        return render_template('index.html')
 
     return render_template('signup.html', form=form)
 
@@ -89,7 +92,9 @@ def timer():
 @app.route('/search')
 @login_required
 def search():
-    return '<h1>search</h1>'
+    form = SearchForm()
+
+    return render_template('search.html', form=form)
 
 @app.route('/quiz')
 @login_required

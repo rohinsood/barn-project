@@ -5,6 +5,7 @@ from .. import db
 class Players(db.Model):
   id = Column(Integer, primary_key=True)
   _name = Column(String(255))
+  _name_id = Column(String(255))
   _team = Column(String(255))
   _position = Column(Integer)
 
@@ -16,6 +17,8 @@ class Players(db.Model):
     self._name = player_name
     self._team = team_name
     self._position = position
+
+    self._name_id = player_name.lower()
 
     self._likes = 0
     self._dislikes = 0
@@ -67,32 +70,35 @@ class Players(db.Model):
     self._dislikes += 1
 
   def to_dict(self):
-    return {"name": self._name, "team": self._team, "standings": self._position, "points": self._points, "nationality": self._nationality, "likes": self._likes, "dislikes": self._dislikes, "comments": str(self._comments)}
+    return {"name": self._name, "team": self._team, "position": self._position,  "likes": self._likes, "dislikes": self._dislikes, "comments": str(self._comments)}
 
 def init_players():
 
   if not len(db.session.query(Players).all()) == 0:
     return
 
-  headers = {
-      "X-RapidAPI-Key": "9275b62a1fmsh3b832340dafb492p1abc77jsn58ef554feee6",
-      "X-RapidAPI-Host": "free-nba.p.rapidapi.com"
-  }
+  all_players = []
 
-  r = requests.get(
-      url="https://free-nba.p.rapidapi.com/players", headers=headers)
+  for page_num in range(1, 39):
+    headers = {
+        "X-RapidAPI-Key": "9275b62a1fmsh3b832340dafb492p1abc77jsn58ef554feee6",
+        "X-RapidAPI-Host": "free-nba.p.rapidapi.com"
+    }
 
-  if r.status_code != 200:
-    print("API Request failed:", r.status_code)
-    exit
+    querystring = {"page":str(page_num),"per_page":"100"}
 
-  all_players = r.json()['data']
+    r = requests.get(
+      url="https://free-nba.p.rapidapi.com/players", headers=headers, params=querystring)
 
-  demo_players = all_players[:4]
+    if r.status_code != 200:
+      print("API Request failed:", r.status_code)
+      exit
+
+    all_players.extend(r.json()['data'])
 
   player_objects = []
 
-  for player in demo_players:
+  for player in all_players:
     full_name = player["first_name"] + " " + player["last_name"]
 
     player_objects.append(
