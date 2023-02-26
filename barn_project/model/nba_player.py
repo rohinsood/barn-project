@@ -1,5 +1,5 @@
 import requests
-from sqlalchemy import Column, Integer, PickleType, String
+from sqlalchemy import Column, Integer, String
 from .. import db
 
 class NBAPlayers(db.Model):
@@ -11,7 +11,6 @@ class NBAPlayers(db.Model):
 
   _likes = Column(Integer)
   _dislikes = Column(Integer)
-  _comments = Column(PickleType)
 
   def __init__(self, player_name, team_name, position):
     self._name = player_name
@@ -22,7 +21,6 @@ class NBAPlayers(db.Model):
 
     self._likes = 0
     self._dislikes = 0
-    self._comments = []
 
   @property
   def name(self):
@@ -44,21 +42,6 @@ class NBAPlayers(db.Model):
   def dislikes(self) -> int:
     return self._dislikes
 
-  @property
-  def comments(self) -> list:
-    return self._comments
-
-  @comments.setter
-  def comments(self, comment: dict):
-    self._comments = self.comments + [comment.copy()]
-
-  def addComment(self, comment):
-    self._comments.append(comment)
-
-
-  def deleteComment(self):
-    self._comments = self.comments[:-1].copy()
-
   def like(self):
     self._likes += 1
 
@@ -66,7 +49,7 @@ class NBAPlayers(db.Model):
     self._dislikes += 1
 
   def to_dict(self):
-    return {"id": self.id, "name": self._name, "team": self._team, "position": self._position,  "likes": self._likes, "dislikes": self._dislikes, "comments": str(self._comments)}
+    return {"id": self.id, "name": self._name, "team": self._team, "position": self._position,  "likes": self._likes, "dislikes": self._dislikes}
 
 def init_players():
 
@@ -101,24 +84,6 @@ def init_players():
         NBAPlayers(player_name=full_name, team_name=player["team"]["full_name"],
                position=player["position"])
     )
-
-  player_objects[0].addComment({
-      "name": "Dontavious",
-      "message": "You're trash!!"
-  })
-  [player_objects[0].dislike() for i in range(20)]
-
-  player_objects[1].addComment({
-      "name": "Dontavious",
-      "message": "Mid tbh"
-  })
-  [player_objects[1].like() for i in range(20)]
-
-  player_objects[2].addComment({
-      "name": "Dontavious",
-      "message": "3.0/3.0: Great job! You deserve some seed points."
-  })
-  [player_objects[2].like() for i in range(3)]
 
   for player in player_objects:
     try:

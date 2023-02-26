@@ -88,17 +88,15 @@ def signup():
 def dashboard():
     return render_template('dashboard.html', name=current_user.username)
 
-@app.route('/timer', methods=['GET', 'POST', 'DELETE', 'UPDATE'])
+@app.route('/timer')
 @login_required
 def timer():
-    return '<h1>timer</h1>'
+    return render_template('timer.html', name=current_user.username)
 
 @app.route('/search')
 @login_required
 def search():
-    form = SearchForm()
-
-    return render_template('search.html', form=form)
+    return render_template('search.html')
 
 @app.route('/quiz')
 @login_required

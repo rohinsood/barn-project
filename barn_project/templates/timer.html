@@ -1,0 +1,241 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Timer
+{% endblock %}
+
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
+<link href='http://fonts.googleapis.com/css?family=Poppins' rel='stylesheet' type='text/css'>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-inverse navbar-fixed-top" style="background-color: #3d2f2b">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+        aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="dashboard">BARN Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="{{ url_for('timer') }}">Ben's Feature</a></li>
+        <li><a href="#">Arnav's Feature</a></li>
+        <li><a href="{{ url_for('search') }}">Luke's Feature</a></li>
+        <li><a href="{{ url_for('quiz') }}">Nicolas's Feature</a></li>
+        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="title-container">
+    <h2>
+      Countdown to the NBA Finals! CRUD the comments with your predictions
+    </h2>
+    <h1 id="timer">
+      0d 0h 0m 0s
+    </h1>
+  </div>
+  <div class="comments-container">
+    <h3 style="text-align: center; font-weight: bold;">
+      Comments
+    </h3>
+    <div class="create-comment-container">
+      <textarea class="comment" id="textarea" placeholder="Write a comment..."></textarea>
+      <button id="button">
+        POST
+      </button>
+    </div>
+    <div class="read-comment-container">
+    </div>
+  </div>
+</div>
+
+<style>
+  #timer {
+    text-align: center;
+    font-size: 60px;
+    margin-top: 20px;
+  }
+
+  .title-container {
+    margin-top: 20px;
+    background-color: #323d96;
+    color: white;
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .comments-container {
+    background-color: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 20px;
+  }
+
+  .create-comment-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  button {
+    width: 25%;
+    background-color: #323d96;
+    border: none;
+    border-radius: 25px;
+    color: black;
+    margin-left: 20px;
+    color: white;
+    font-weight: bolder;
+    font-size: 20px;
+  }
+
+  button:hover {
+    scale: 110%;
+  }
+
+  .comment {
+    font-weight: lighter;
+    width: 75%;
+    height: 40px;
+    transition: width 0.4s ease-in-out;
+    font-size: 14px;
+    padding: 2px;
+    border-radius: 9px;
+    margin: 5px
+  }
+
+  .comment-container {
+    margin-top: 15px;
+    padding-left: 20px;
+    background-color: antiquewhite;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    border-radius: 25px;
+  }
+
+  .name {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .body {
+    margin-bottom: 15px;
+  }
+</style>
+
+<script>
+
+  getComments()
+
+  const button = document.getElementById("button")
+  button.onclick = () => { createComment() }
+
+  const commentContainer = document.getElementsByClassName("read-comment-container")[0]
+  
+  function getComments() {
+    var url = "{{ url }}list-comments"
+    var options = {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+    .then(response => response.json())
+    .then(data => {
+      
+      console.log(data)
+
+      for(comment in data) {
+        console.log(data[comment]["name"])
+
+        var newComment = document.createElement("div")
+        newComment.className = "comment-container"
+
+        var commentName = document.createElement("h3")
+        commentName.textContent = data[comment]["name"]
+        commentName.className = "name"
+
+        var commentBody = document.createElement("p")
+        commentBody.textContent = data[comment]["body"]
+        commentBody.className = "body"
+
+        newComment.appendChild(commentName)
+        newComment.appendChild(commentBody)
+
+        commentContainer.appendChild(newComment)
+      }
+    
+    })
+    .catch(error => console.error(error));
+  }
+
+  function createComment() {
+    
+    let body = textarea.value
+
+    if (body == "")
+      return
+
+    const params = new URLSearchParams();
+    params.append("name", "{{ name }}")
+    params.append("body", body)
+
+    var url = "{{ url }}comments?" + params.toString()
+    var options = {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'default',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }
+
+    fetch(url, options)
+    .then(response => response.json())
+    .then(data => {console.log(data); })
+    .catch(error => console.error(error));
+
+    getComments()
+  }
+
+  var countDownDate = new Date("Jun 5, 2023 12:00:00").getTime();
+
+  var x = setInterval(function () {
+
+    var now = new Date().getTime();
+
+    var distance = countDownDate - now;
+
+    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById("timer").innerHTML = days + "d " + hours + "h "
+      + minutes + "m " + seconds + "s ";
+
+    if (distance < 0) {
+      clearInterval(x);
+      document.getElementById("demo").innerHTML = "EXPIRED";
+    }
+  }, 1000);
+
+</script>
+{% endblock %}
