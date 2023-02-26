@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
 from wtforms import StringField, PasswordField, BooleanField
@@ -18,6 +18,10 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+@app.context_processor
+def inject_url():
+    return dict(url=request.url_root)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -2,7 +2,7 @@ import requests
 from sqlalchemy import Column, Integer, PickleType, String
 from .. import db
 
-class Players(db.Model):
+class NBAPlayers(db.Model):
   id = Column(Integer, primary_key=True)
   _name = Column(String(255))
   _name_id = Column(String(255))
@@ -33,12 +33,8 @@ class Players(db.Model):
     return self._team
 
   @property
-  def standings(self):
+  def position(self):
     return self._position
-
-  @property
-  def nationality(self):
-    return self._nationality
 
   @property
   def likes(self) -> int:
@@ -70,11 +66,11 @@ class Players(db.Model):
     self._dislikes += 1
 
   def to_dict(self):
-    return {"name": self._name, "team": self._team, "position": self._position,  "likes": self._likes, "dislikes": self._dislikes, "comments": str(self._comments)}
+    return {"id": self.id, "name": self._name, "team": self._team, "position": self._position,  "likes": self._likes, "dislikes": self._dislikes, "comments": str(self._comments)}
 
 def init_players():
 
-  if not len(db.session.query(Players).all()) == 0:
+  if not len(db.session.query(NBAPlayers).all()) == 0:
     return
 
   all_players = []
@@ -102,7 +98,7 @@ def init_players():
     full_name = player["first_name"] + " " + player["last_name"]
 
     player_objects.append(
-        Players(player_name=full_name, team_name=player["team"]["full_name"],
+        NBAPlayers(player_name=full_name, team_name=player["team"]["full_name"],
                position=player["position"])
     )
 
