@@ -1,0 +1,10 @@
+version: '3'
+services:
+        web:
+                image: bark_project_port_v1
+                build: .
+                ports:
+                        - "3749:3749"
+                volumes:
+                        - ./instance:/instance
+                restart: unless-stopped
