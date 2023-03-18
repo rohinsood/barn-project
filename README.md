@@ -1,3 +1,3 @@
-# barn-project
-
-> My AP Computer Science Principles final
+# BARN Project
+> 🏈 Hub for sports discussion, trivia and statistics.
+> AP Computer Science Principles final
