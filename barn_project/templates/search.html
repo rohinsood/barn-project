@@ -27,10 +27,9 @@ Search
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="{{ url_for('timer') }}">Ben's Feature</a></li>
-        <li><a href="#">Arnav's Feature</a></li>
-        <li><a href="{{ url_for('search') }}">Luke's Feature</a></li>
-        <li><a href="{{ url_for('quiz') }}">Nicolas's Feature</a></li>
+        <li><a href="{{ url_for('timer') }}">Timer Feature</a></li>
+        <li><a href="{{ url_for('search') }}">Search Feature</a></li>
+        <li><a href="{{ url_for('quiz') }}">Quiz Feature</a></li>
         <li><a href="{{ url_for('logout') }}">Log Out</a></li>
       </ul>
     </div>
@@ -154,7 +153,11 @@ button:hover {
 
 <script>
   const searchInput = document.getElementById("search")
-  searchInput.addEventListener("keydown", playerSearch)
+  searchInput.addEventListener("keydown", function (e) {
+    if (e.code === "Enter") { 
+        playerSearch()
+    }
+  })
   const name = document.getElementsByClassName("name")[0]
   const team = document.getElementsByClassName("team")[0]
   const position = document.getElementsByClassName("position")[0]
@@ -165,7 +168,9 @@ button:hover {
 
   let playerID = 0
 
-  function playerSearch(event) {
+  function playerSearch() {
+
+    console.log("player")
 
     var url = "{{ url }}nba-list"
     var options = {
@@ -196,6 +201,7 @@ button:hover {
           for (const player of data) {
 
             if (player.name.toLowerCase() === searchInput.value.toLowerCase()) {
+              console.log("found")
               playerID = player["id"]
 
               name.textContent = player["name"]
